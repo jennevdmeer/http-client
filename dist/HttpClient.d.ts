@@ -2,13 +2,6 @@ import HttpClientInterface from './HttpClientInterface';
 import RequestOptionsInterface from './RequestOptionsInterface';
 import ResponseInterface from './ResponseInterface';
 import Headers from './Headers';
-export { default as HttpClientInterface } from './HttpClientInterface';
-export { default as RequestOptionsInterface } from './RequestOptionsInterface';
-export { default as ResponseInterface } from './ResponseInterface';
-export { default as RequestInterface } from './RequestInterface';
-export { default as ResponseType } from './ResponseType';
-export { default as ReadyState } from './ReadyState';
-export { default as Headers } from './Headers';
 export default class HttpClient implements HttpClientInterface {
     static defaultOptions: RequestOptionsInterface;
     private options;

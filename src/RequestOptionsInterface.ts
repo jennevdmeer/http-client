@@ -1,6 +1,6 @@
 import ResponseType from './ResponseType';
 import Headers from './Headers';
-import {HttpClientError} from './Errors';
+import { HttpClientError } from './Errors';
 
 export default interface RequestOptionsInterface {
     authBasic?: string | string[] | { [key: string]: string },

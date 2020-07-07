@@ -4,18 +4,12 @@ import ResponseInterface from './ResponseInterface';
 import Response from './Response';
 import RequestInterface from './RequestInterface';
 import Request from './Request';
-import ResponseType from './ResponseType';
-import ReadyState from './ReadyState';
-import Headers from './Headers';
-import {HttpClientError, HttpError, NetworkError, RequestAborted, RequestTimeout, StatusToError} from './Errors';
 
-export {default as HttpClientInterface} from './HttpClientInterface';
-export {default as RequestOptionsInterface} from './RequestOptionsInterface';
-export {default as ResponseInterface} from './ResponseInterface';
-export {default as RequestInterface} from './RequestInterface';
-export {default as ResponseType} from './ResponseType';
-export {default as ReadyState} from './ReadyState';
-export {default as Headers} from './Headers';
+import Headers from './Headers';
+import ReadyState from './ReadyState';
+import ResponseType from './ResponseType';
+
+import { HttpClientError, HttpError, NetworkError, RequestAborted, RequestTimeout, StatusToError } from './Errors';
 
 export default class HttpClient implements HttpClientInterface {
     static defaultOptions: RequestOptionsInterface = {

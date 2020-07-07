@@ -2,13 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Response_1 = require("./Response");
 const Request_1 = require("./Request");
-const ResponseType_1 = require("./ResponseType");
 const ReadyState_1 = require("./ReadyState");
+const ResponseType_1 = require("./ResponseType");
 const Errors_1 = require("./Errors");
-var ResponseType_2 = require("./ResponseType");
-Object.defineProperty(exports, "ResponseType", { enumerable: true, get: function () { return ResponseType_2.default; } });
-var ReadyState_2 = require("./ReadyState");
-Object.defineProperty(exports, "ReadyState", { enumerable: true, get: function () { return ReadyState_2.default; } });
 class HttpClient {
     constructor(options) {
         this.options = Object.assign({}, HttpClient.defaultOptions);
