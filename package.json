@@ -5,7 +5,7 @@
   },
   "description": "Basic minimal HttpClient lib, making use of old school XMLHttpRequest instead of fetch because it has better support and has more functionality.",
   "license": "ISC",
-  "name": "http-client",
+  "name": "impulze-http-client",
   "main": "dist/Index.js",
   "types": "dist/Index.d.ts",
   "version": "0.0.5",
