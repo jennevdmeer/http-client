@@ -8,7 +8,7 @@
   "name": "http-client",
   "main": "dist/HttpClient.js",
   "types": "dist/HttpClient.d.ts",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "scripts": {
     "prepublish": "tsc"
   }
