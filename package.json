@@ -1,0 +1,11 @@
+{
+  "name": "http-client",
+  "version": "0.0.1",
+  "description": "Basic minimal HttpClient lib, making use of old school XMLHttpRequest instead of fetch because it has better support and has more functionality.",
+  "main": "src/HttpClient.ts",
+  "author": "Jenne van der Meer <jennevdmeer@impulze.net>",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^3.9.6"
+  }
+}
