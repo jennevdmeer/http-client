@@ -309,10 +309,10 @@ export default class HttpClient implements HttpClientInterface {
         switch (tryAndReturn) {
             case ResponseType.Json:
                 try {
-                    response.content = JSON.parse(xhr.responseText);
+                    response.content = xhr.response;
                     response.responseType = ResponseType.Json;
                 } catch (error) {
-                    error = new HttpClientError(`Error parsing response as JSON; ${error.message}.`, error);
+                    error = new HttpClientError(`Error consuming json request; ${error.message}.`, error);
                     response.content = xhr.response;
                     throw error;
                 }

@@ -233,11 +233,11 @@ class HttpClient {
         switch (tryAndReturn) {
             case ResponseType_1.default.Json:
                 try {
-                    response.content = JSON.parse(xhr.responseText);
+                    response.content = xhr.response;
                     response.responseType = ResponseType_1.default.Json;
                 }
                 catch (error) {
-                    error = new Errors_1.HttpClientError(`Error parsing response as JSON; ${error.message}.`, error);
+                    error = new Errors_1.HttpClientError(`Error consuming json request; ${error.message}.`, error);
                     response.content = xhr.response;
                     throw error;
                 }
