@@ -1,25 +1,17 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
-};
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Errors"), exports);
-__exportStar(require("./Headers"), exports);
-__exportStar(require("./HttpClient"), exports);
-__exportStar(require("./HttpClientInterface"), exports);
-__exportStar(require("./RequestOptionsInterface"), exports);
-__exportStar(require("./ReadyState"), exports);
-__exportStar(require("./Request"), exports);
-__exportStar(require("./RequestInterface"), exports);
-__exportStar(require("./RequestOptionsInterface"), exports);
-__exportStar(require("./Response"), exports);
-__exportStar(require("./ResponseInterface"), exports);
-__exportStar(require("./ResponseType"), exports);
+__export(require("./Errors"));
+var HttpClient_1 = require("./HttpClient");
+exports.HttpClient = HttpClient_1.default;
+var ReadyState_1 = require("./ReadyState");
+exports.ReadyState = ReadyState_1.default;
+var Request_1 = require("./Request");
+exports.Request = Request_1.default;
+var Response_1 = require("./Response");
+exports.Response = Response_1.default;
+var ResponseType_1 = require("./ResponseType");
+exports.ResponseType = ResponseType_1.default;
 //# sourceMappingURL=Index.js.map

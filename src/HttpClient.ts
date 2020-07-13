@@ -82,7 +82,7 @@ export default class HttpClient implements HttpClientInterface {
         }
 
         query = Object.assign(query, params);
-        url += '?' + (new URLSearchParams(query)).toString();
+        url += '?' + (new URLSearchParams(query as any)).toString();
 
         return url;
     }
@@ -141,6 +141,7 @@ export default class HttpClient implements HttpClientInterface {
             let xhr = request.request = new XMLHttpRequest();
             xhr.withCredentials = request.withCredentials;
             xhr.timeout = request.timeout;
+            xhr.responseType = request.responseType;
 
             xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
 
@@ -176,7 +177,6 @@ export default class HttpClient implements HttpClientInterface {
             }
 
             if (request.headers.contentType === 'application/x-www-form-urlencoded' && typeof (request.body) === 'object') {
-                // @ts-ignore
                 content = (new URLSearchParams(request.body)).toString();
             }
         } else if (undefined !== request.json) {
@@ -215,7 +215,7 @@ export default class HttpClient implements HttpClientInterface {
         return url;
     }
 
-    private onError(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+    private onError(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         response.request = request;
         response.endTime = Date.now();
         response.error = true;
@@ -241,7 +241,7 @@ export default class HttpClient implements HttpClientInterface {
         return error;
     }
 
-    private onTimeout(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+    private onTimeout(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         response.request = request;
         response.endTime = Date.now();
         response.timeout = true;
@@ -255,7 +255,7 @@ export default class HttpClient implements HttpClientInterface {
         return error;
     }
 
-    private onAbort(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+    private onAbort(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         response.request = request;
         response.endTime = Date.now();
         response.aborted = true;
@@ -278,39 +278,39 @@ export default class HttpClient implements HttpClientInterface {
         }
     }
 
-    private onLoadStart(xhr: XMLHttpRequest, event: any, request: RequestInterface, response: ResponseInterface) {
+    private onLoadStart(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         // console.log('loadend', event, event.constructor.name);
     }
 
-    private onLoadEnd(xhr: XMLHttpRequest, event: any, request: RequestInterface, response: ResponseInterface) {
+    private onLoadEnd(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         // console.log('loadend', event, event.constructor.name);
     }
 
-    private onProgress(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+    private onProgress(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         // console.log('progress', event, event.constructor.name);
     }
 
-    private onLoad(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+    private onLoad(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
+        const successful = this.isSuccessStatus(response.status);
         response.endTime = Date.now();
         response.request = request;
 
-        response.responseType = request.responseType;
-        if (undefined === response.responseType) {
-            // Attempt to guess content responseType by header.
+        let tryAndReturn = request.responseType;
+        if (undefined === tryAndReturn) {
+            // Attempt to guess content responseType by content type.
             const ct = response.headers.contentType;
             if (/json/.test(ct)) {
-                response.responseType = ResponseType.Json;
+                tryAndReturn = ResponseType.Json;
             } else if (/(ht|x)ml/.test(ct)) {
-                response.responseType = ResponseType.Document;
-            } else {
-                response.responseType = ResponseType.Text;
+                tryAndReturn = ResponseType.Document;
             }
         }
 
-        switch (response.responseType) {
+        switch (tryAndReturn) {
             case ResponseType.Json:
                 try {
                     response.content = JSON.parse(xhr.responseText);
+                    response.responseType = ResponseType.Json;
                 } catch (error) {
                     error = new HttpClientError(`Error parsing response as JSON; ${error.message}.`, error);
                     response.content = xhr.response;
@@ -320,15 +320,18 @@ export default class HttpClient implements HttpClientInterface {
 
             case ResponseType.Document:
                 response.content = xhr.responseXML;
+                response.responseType = ResponseType.Document;
                 break;
 
             default:
                 response.content = xhr.response;
+                response.responseType = request.responseType;
         }
 
         response.status = xhr.status;
         response.statusText = xhr.statusText;
-        if (!this.isSuccessStatus(response.status)) {
+
+        if (!successful) {
             const instance = undefined !== StatusToError[response.status]
                 ? StatusToError[response.status]
                 : HttpError;

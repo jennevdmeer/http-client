@@ -98,6 +98,7 @@ class HttpClient {
             let xhr = request.request = new XMLHttpRequest();
             xhr.withCredentials = request.withCredentials;
             xhr.timeout = request.timeout;
+            xhr.responseType = request.responseType;
             xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
             const content = this.prepareRequestContent(request);
             this.prepareHeaders(request, xhr);
@@ -125,7 +126,6 @@ class HttpClient {
                 request.headers.contentType = 'application/x-www-form-urlencoded';
             }
             if (request.headers.contentType === 'application/x-www-form-urlencoded' && typeof (request.body) === 'object') {
-                // @ts-ignore
                 content = (new URLSearchParams(request.body)).toString();
             }
         }
@@ -216,26 +216,25 @@ class HttpClient {
         // console.log('progress', event, event.constructor.name);
     }
     onLoad(xhr, event, request, response) {
+        const successful = this.isSuccessStatus(response.status);
         response.endTime = Date.now();
         response.request = request;
-        response.responseType = request.responseType;
-        if (undefined === response.responseType) {
-            // Attempt to guess content responseType by header.
+        let tryAndReturn = request.responseType;
+        if (undefined === tryAndReturn) {
+            // Attempt to guess content responseType by content type.
             const ct = response.headers.contentType;
             if (/json/.test(ct)) {
-                response.responseType = ResponseType_1.default.Json;
+                tryAndReturn = ResponseType_1.default.Json;
             }
             else if (/(ht|x)ml/.test(ct)) {
-                response.responseType = ResponseType_1.default.Document;
-            }
-            else {
-                response.responseType = ResponseType_1.default.Text;
+                tryAndReturn = ResponseType_1.default.Document;
             }
         }
-        switch (response.responseType) {
+        switch (tryAndReturn) {
             case ResponseType_1.default.Json:
                 try {
                     response.content = JSON.parse(xhr.responseText);
+                    response.responseType = ResponseType_1.default.Json;
                 }
                 catch (error) {
                     error = new Errors_1.HttpClientError(`Error parsing response as JSON; ${error.message}.`, error);
@@ -245,13 +244,15 @@ class HttpClient {
                 break;
             case ResponseType_1.default.Document:
                 response.content = xhr.responseXML;
+                response.responseType = ResponseType_1.default.Document;
                 break;
             default:
                 response.content = xhr.response;
+                response.responseType = request.responseType;
         }
         response.status = xhr.status;
         response.statusText = xhr.statusText;
-        if (!this.isSuccessStatus(response.status)) {
+        if (!successful) {
             const instance = undefined !== Errors_1.StatusToError[response.status]
                 ? Errors_1.StatusToError[response.status]
                 : Errors_1.HttpError;
@@ -268,11 +269,11 @@ class HttpClient {
             : status >= 200 && status < 400;
     }
 }
-exports.default = HttpClient;
 HttpClient.defaultOptions = {
     query: {},
     headers: {},
     timeout: 0,
     withCredentials: false,
 };
+exports.default = HttpClient;
 //# sourceMappingURL=HttpClient.js.map

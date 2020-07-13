@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReadyState = void 0;
 var ReadyState;
 (function (ReadyState) {
     ReadyState[ReadyState["Unsent"] = 0] = "Unsent";
