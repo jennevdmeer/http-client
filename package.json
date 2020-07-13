@@ -8,7 +8,7 @@
   "name": "impulze-http-client",
   "main": "dist/Index.js",
   "types": "dist/Index.d.ts",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "scripts": {
     "prepare": "tsc"
   }

@@ -328,9 +328,6 @@ export default class HttpClient implements HttpClientInterface {
                 response.responseType = request.responseType;
         }
 
-        response.status = xhr.status;
-        response.statusText = xhr.statusText;
-
         if (!successful) {
             const instance = undefined !== StatusToError[response.status]
                 ? StatusToError[response.status]

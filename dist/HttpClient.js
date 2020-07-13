@@ -250,8 +250,6 @@ class HttpClient {
                 response.content = xhr.response;
                 response.responseType = request.responseType;
         }
-        response.status = xhr.status;
-        response.statusText = xhr.statusText;
         if (!successful) {
             const instance = undefined !== Errors_1.StatusToError[response.status]
                 ? Errors_1.StatusToError[response.status]
