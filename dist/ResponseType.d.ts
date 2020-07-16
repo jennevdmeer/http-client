@@ -1,4 +1,5 @@
 declare enum ResponseType {
+    Undefined = "",
     Text = "text",
     Json = "json",
     ArrayBuffer = "arraybuffer",

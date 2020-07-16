@@ -7,10 +7,11 @@ export default interface ResponseInterface {
     statusText: string;
     headers: Headers;
     responseType?: ResponseType;
-    content: string | object | Array<any>;
+    data: any;
+    successful: boolean;
+    error: boolean;
     aborted: boolean;
     timeout: boolean;
-    error: boolean;
     endTime: number;
     readonly duration: number;
 }

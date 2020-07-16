@@ -5,6 +5,7 @@ const Request_1 = require("./Request");
 const ReadyState_1 = require("./ReadyState");
 const ResponseType_1 = require("./ResponseType");
 const Errors_1 = require("./Errors");
+const Util_1 = require("./Util");
 class HttpClient {
     constructor(options) {
         this.options = Object.assign({}, HttpClient.defaultOptions);
@@ -38,7 +39,7 @@ class HttpClient {
             }
             let value = headers[key];
             // Transform any snakes to camels.
-            key = key.replace(/-([a-z])/, (m, c) => c.toUpperCase());
+            key = key.replace(/-([a-z])/g, (m, c) => c.toUpperCase());
             if ((undefined === value) || (null === value)) {
                 delete target[key];
             }
@@ -92,16 +93,20 @@ class HttpClient {
         });
         return new Promise(caller);
     }
+    retry(request) {
+        return this.request(request.method, request.url, request);
+    }
     execute(request) {
         const response = new Response_1.default();
         return new Promise((resolve, reject) => {
             let xhr = request.request = new XMLHttpRequest();
+            xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
             xhr.withCredentials = request.withCredentials;
             xhr.timeout = request.timeout;
             xhr.responseType = request.responseType;
-            xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
             const content = this.prepareRequestContent(request);
-            this.prepareHeaders(request, xhr);
+            this.prepareAuthorizationHeader(request, xhr);
+            this.setHeaders(xhr, request);
             xhr.onload = event => {
                 const outcome = this.onLoad(xhr, event, request, response);
                 return outcome instanceof Errors_1.HttpClientError
@@ -112,37 +117,59 @@ class HttpClient {
             xhr.onerror = event => reject(this.onError(xhr, event, request, response));
             xhr.ontimeout = event => reject(this.onTimeout(xhr, event, request, response));
             xhr.onreadystatechange = event => this.onReadyStateChange(xhr, event, request, response);
-            xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
-            xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
-            xhr.onprogress = event => this.onProgress(xhr, event, request, response);
+            // xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
+            // xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
+            // xhr.onprogress = event => this.onProgress(xhr, event, request, response);
             xhr.send(content);
         });
     }
     prepareRequestContent(request) {
-        let content = undefined;
-        if (undefined !== request.body) {
+        let content;
+        if (request.json !== undefined) {
+            content = JSON.stringify(request.json);
+            if (undefined === request.headers.contentType) {
+                request.headers.contentType = 'application/json';
+            }
+        }
+        else {
             content = request.body;
-            if (!request.headers.contentType) {
-                request.headers.contentType = 'application/x-www-form-urlencoded';
-            }
-            if (request.headers.contentType === 'application/x-www-form-urlencoded' && typeof (request.body) === 'object') {
-                content = (new URLSearchParams(request.body)).toString();
+            if (Util_1.isFormData(content) || ((Util_1.isBlob(content) || Util_1.isFile(content)) && request.responseType)) {
+                request.responseType = ResponseType_1.default.Undefined;
+                delete request.headers.contentType;
             }
         }
-        else if (undefined !== request.json) {
-            request.headers.contentType = 'application/json';
-            content = typeof (request.json) === 'string'
-                ? request.json
-                : JSON.stringify(request.json);
-        }
-        return content;
+        return content || null;
     }
-    prepareHeaders(request, xhr) {
+    prepareAuthorizationHeader(request, xhr) {
+        const auth = request.auth;
+        if (undefined === auth) {
+            return;
+        }
+        let authValue;
+        if (typeof (auth) === 'string') {
+            authValue = auth;
+        }
+        else if (auth.type && auth.credentials) {
+            authValue = auth.type + ' ' + auth.credentials;
+        }
+        else if (auth.username && auth.password) {
+            const password = unescape(encodeURIComponent(auth.password)) || '';
+            authValue = 'basic' + btoa(auth.username + ':' + password);
+        }
+        if (!authValue) {
+            return;
+        }
+        if (undefined === request.headers.authorization) {
+            throw new Errors_1.HttpClientError('Using both authorization header and auth option.');
+        }
+        return request.headers.authorization = authValue;
+    }
+    setHeaders(xhr, request) {
         for (let key in request.headers) {
             const value = request.headers[key];
             // Convert camels to snakes (well dashes) - https://stackoverflow.com/a/56895309/4433067.
-            key = key.replace(/(.)([A-Z][a-z]+)/, '$1-$2')
-                .replace(/([a-z0-9])([A-Z])/, '$1-$2')
+            key = key.replace(/(.)([A-Z][a-z]+)/g, '$1-$2')
+                .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
                 .toLowerCase();
             xhr.setRequestHeader(key, value);
         }
@@ -154,6 +181,30 @@ class HttpClient {
             url = HttpClient.BuildQuery(url, request.query);
         }
         return url;
+    }
+    onLoad(xhr, event, request, response) {
+        response.endTime = Date.now();
+        response.request = request;
+        response.data = !request.responseType || request.responseType === ResponseType_1.default.Text
+            ? xhr.responseText
+            : xhr.response;
+        if (!request.responseType && response.data) {
+            try {
+                response.data = JSON.parse(response.data);
+            }
+            catch (e) {
+            }
+        }
+        if (this.isSuccessStatus(response.status)) {
+            return response;
+        }
+        const instance = Errors_1.StatusToError.hasOwnProperty(response.status)
+            ? Errors_1.StatusToError[response.status]
+            : Errors_1.HttpError;
+        const error = new instance(`Server returned ${response.status} ${response.statusText}.`);
+        error.response = response;
+        error.request = request;
+        return error;
     }
     onError(xhr, event, request, response) {
         response.request = request;
@@ -204,6 +255,7 @@ class HttpClient {
                 response.statusText = xhr.statusText;
                 HttpClient.SetHeadersFromString(response.headers, xhr.getAllResponseHeaders());
                 break;
+            // case ReadyState.Done:
         }
     }
     onLoadStart(xhr, event, request, response) {
@@ -214,52 +266,6 @@ class HttpClient {
     }
     onProgress(xhr, event, request, response) {
         // console.log('progress', event, event.constructor.name);
-    }
-    onLoad(xhr, event, request, response) {
-        const successful = this.isSuccessStatus(response.status);
-        response.endTime = Date.now();
-        response.request = request;
-        let tryAndReturn = request.responseType;
-        if (undefined === tryAndReturn) {
-            // Attempt to guess content responseType by content type.
-            const ct = response.headers.contentType;
-            if (/json/.test(ct)) {
-                tryAndReturn = ResponseType_1.default.Json;
-            }
-            else if (/(ht|x)ml/.test(ct)) {
-                tryAndReturn = ResponseType_1.default.Document;
-            }
-        }
-        switch (tryAndReturn) {
-            case ResponseType_1.default.Json:
-                try {
-                    response.content = xhr.response;
-                    response.responseType = ResponseType_1.default.Json;
-                }
-                catch (error) {
-                    error = new Errors_1.HttpClientError(`Error consuming json request; ${error.message}.`, error);
-                    response.content = xhr.response;
-                    throw error;
-                }
-                break;
-            case ResponseType_1.default.Document:
-                response.content = xhr.responseXML;
-                response.responseType = ResponseType_1.default.Document;
-                break;
-            default:
-                response.content = xhr.response;
-                response.responseType = request.responseType;
-        }
-        if (!successful) {
-            const instance = undefined !== Errors_1.StatusToError[response.status]
-                ? Errors_1.StatusToError[response.status]
-                : Errors_1.HttpError;
-            const error = new instance(`Server returned ${response.status} ${response.statusText}.`);
-            error.response = response;
-            error.request = request;
-            return error;
-        }
-        return response;
     }
     isSuccessStatus(status) {
         return this.options.isSuccessStatus
@@ -272,6 +278,7 @@ HttpClient.defaultOptions = {
     headers: {},
     timeout: 0,
     withCredentials: false,
+    responseType: ResponseType_1.default.Undefined,
 };
 exports.default = HttpClient;
 //# sourceMappingURL=HttpClient.js.map

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const HttpClient_1 = require("./HttpClient");
 class Response {
     constructor() {
+        this.successful = false;
         this.aborted = false;
         this.timeout = false;
         this.error = false;

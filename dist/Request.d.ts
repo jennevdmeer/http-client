@@ -6,14 +6,14 @@ export default class Request implements RequestInterface {
     _method: string;
     url: string;
     request: XMLHttpRequest;
-    authBasic: string | {
+    auth: string | {
         [key: string]: string;
     };
     baseUrl: string;
     query: object;
-    body: string | object;
+    data: string | object;
     json: string | object;
-    responseType?: ResponseType;
+    responseType: ResponseType;
     timeout: number;
     withCredentials: boolean;
     startTime: number;

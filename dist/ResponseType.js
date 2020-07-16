@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var ResponseType;
 (function (ResponseType) {
+    ResponseType["Undefined"] = "";
     ResponseType["Text"] = "text";
     ResponseType["Json"] = "json";
     ResponseType["ArrayBuffer"] = "arraybuffer";

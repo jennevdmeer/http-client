@@ -11,17 +11,15 @@ export default class Response implements ResponseInterface {
     statusText: string;
 
     responseType?: ResponseType;
-    content: string | object | Array<any>;
+    data: any;
 
+    successful: boolean = false;
     aborted: boolean = false;
     timeout: boolean = false;
     error: boolean = false;
     endTime: number;
 
     private _headers: Headers = {};
-
-    constructor() {
-    }
 
     set headers(headers: Headers) {
         HttpClient.SetHeaders(this._headers, headers);
@@ -34,5 +32,4 @@ export default class Response implements ResponseInterface {
     get duration(): number {
         return this.endTime - this.request.startTime;
     }
-
 }

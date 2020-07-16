@@ -1,6 +1,7 @@
 import HttpClientInterface from './HttpClientInterface';
 import RequestOptionsInterface from './RequestOptionsInterface';
 import ResponseInterface from './ResponseInterface';
+import RequestInterface from './RequestInterface';
 import Headers from './Headers';
 export default class HttpClient implements HttpClientInterface {
     static defaultOptions: RequestOptionsInterface;
@@ -14,10 +15,13 @@ export default class HttpClient implements HttpClientInterface {
     get(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
     post(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
     request(method: string, url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
+    retry(request: RequestInterface): Promise<ResponseInterface>;
     private execute;
     private prepareRequestContent;
-    private prepareHeaders;
+    private prepareAuthorizationHeader;
+    private setHeaders;
     private buildUrl;
+    private onLoad;
     private onError;
     private onTimeout;
     private onAbort;
@@ -25,6 +29,5 @@ export default class HttpClient implements HttpClientInterface {
     private onLoadStart;
     private onLoadEnd;
     private onProgress;
-    private onLoad;
     private isSuccessStatus;
 }

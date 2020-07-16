@@ -10,6 +10,7 @@ import ReadyState from './ReadyState';
 import ResponseType from './ResponseType';
 
 import { HttpClientError, HttpError, NetworkError, RequestAborted, RequestTimeout, StatusToError } from './Errors';
+import { isBlob, isFile, isFormData } from './Util';
 
 export default class HttpClient implements HttpClientInterface {
     static defaultOptions: RequestOptionsInterface = {
@@ -17,6 +18,7 @@ export default class HttpClient implements HttpClientInterface {
         headers: {},
         timeout: 0,
         withCredentials: false,
+        responseType: ResponseType.Undefined,
     };
 
     private options: RequestOptionsInterface = Object.assign({}, HttpClient.defaultOptions);
@@ -58,7 +60,7 @@ export default class HttpClient implements HttpClientInterface {
 
             let value = headers[key];
             // Transform any snakes to camels.
-            key = key.replace(/-([a-z])/, (m, c) => c.toUpperCase());
+            key = key.replace(/-([a-z])/g, (m, c) => c.toUpperCase());
             if ((undefined === value) || (null === value)) {
                 delete target[key];
             } else {
@@ -134,19 +136,24 @@ export default class HttpClient implements HttpClientInterface {
         return new Promise(caller);
     }
 
+    retry(request: RequestInterface): Promise<ResponseInterface> {
+        return this.request(request.method, request.url, request);
+    }
+
     private execute(request: RequestInterface): Promise<ResponseInterface> {
         const response = new Response();
 
         return new Promise((resolve, reject) => {
             let xhr = request.request = new XMLHttpRequest();
+            xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
+
             xhr.withCredentials = request.withCredentials;
             xhr.timeout = request.timeout;
             xhr.responseType = request.responseType;
 
-            xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
-
             const content = this.prepareRequestContent(request);
-            this.prepareHeaders(request, xhr);
+            this.prepareAuthorizationHeader(request, xhr);
+            this.setHeaders(xhr, request);
 
             xhr.onload = event => {
                 const outcome = this.onLoad(xhr, event, request, response);
@@ -159,44 +166,70 @@ export default class HttpClient implements HttpClientInterface {
             xhr.onabort = event => reject(this.onAbort(xhr, event, request, response));
             xhr.onerror = event => reject(this.onError(xhr, event, request, response));
             xhr.ontimeout = event => reject(this.onTimeout(xhr, event, request, response));
+
             xhr.onreadystatechange = event => this.onReadyStateChange(xhr, event, request, response);
-            xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
-            xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
-            xhr.onprogress = event => this.onProgress(xhr, event, request, response);
+
+            // xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
+            // xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
+            // xhr.onprogress = event => this.onProgress(xhr, event, request, response);
 
             xhr.send(content);
         });
     }
 
     private prepareRequestContent(request) {
-        let content = undefined;
-        if (undefined !== request.body) {
+        let content;
+        if (request.json !== undefined) {
+            content = JSON.stringify(request.json);
+            if (undefined === request.headers.contentType) {
+                request.headers.contentType = 'application/json';
+            }
+        } else {
             content = request.body;
-            if (!request.headers.contentType) {
-                request.headers.contentType = 'application/x-www-form-urlencoded';
-            }
 
-            if (request.headers.contentType === 'application/x-www-form-urlencoded' && typeof (request.body) === 'object') {
-                content = (new URLSearchParams(request.body)).toString();
+            if (isFormData(content) || ((isBlob(content) || isFile(content)) && request.responseType)) {
+                request.responseType = ResponseType.Undefined;
+                delete request.headers.contentType;
             }
-        } else if (undefined !== request.json) {
-            request.headers.contentType = 'application/json';
-
-            content = typeof (request.json) === 'string'
-                ? request.json
-                : JSON.stringify(request.json);
         }
 
-        return content;
+        return content || null;
     }
 
-    private prepareHeaders(request: RequestInterface, xhr: XMLHttpRequest) {
+    private prepareAuthorizationHeader(request: RequestInterface, xhr: XMLHttpRequest) {
+        const auth = request.auth;
+        if (undefined === auth) {
+            return;
+        }
+
+        let authValue;
+        if (typeof(auth) === 'string') {
+            authValue = auth;
+        } else if (auth.type && auth.credentials) {
+            authValue = auth.type + ' ' + auth.credentials;
+        } else if (auth.username && auth.password) {
+            const password = unescape(encodeURIComponent(auth.password)) || '';
+            authValue = 'basic' + btoa(auth.username + ':' + password);
+        }
+
+        if (!authValue) {
+            return;
+        }
+
+        if (undefined === request.headers.authorization) {
+            throw new HttpClientError('Using both authorization header and auth option.');
+        }
+
+        return request.headers.authorization = authValue;
+    }
+
+    private setHeaders(xhr: XMLHttpRequest, request: RequestInterface) {
         for (let key in request.headers) {
             const value = request.headers[key];
 
             // Convert camels to snakes (well dashes) - https://stackoverflow.com/a/56895309/4433067.
-            key = key.replace(/(.)([A-Z][a-z]+)/, '$1-$2')
-                .replace(/([a-z0-9])([A-Z])/, '$1-$2')
+            key = key.replace(/(.)([A-Z][a-z]+)/g, '$1-$2')
+                .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
                 .toLowerCase();
 
             xhr.setRequestHeader(key, value);
@@ -213,6 +246,36 @@ export default class HttpClient implements HttpClientInterface {
         }
 
         return url;
+    }
+
+    private onLoad(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
+        response.endTime = Date.now();
+        response.request = request;
+
+        response.data = !request.responseType || request.responseType === ResponseType.Text
+            ? xhr.responseText
+            : xhr.response;
+
+        if (!request.responseType && response.data) {
+            try {
+                response.data = JSON.parse(response.data);
+            } catch (e) {
+            }
+        }
+
+        if (this.isSuccessStatus(response.status)) {
+            return response;
+        }
+
+        const instance = StatusToError.hasOwnProperty(response.status)
+            ? StatusToError[response.status]
+            : HttpError;
+
+        const error = new instance(`Server returned ${response.status} ${response.statusText}.`);
+        error.response = response;
+        error.request = request;
+
+        return error;
     }
 
     private onError(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
@@ -275,6 +338,8 @@ export default class HttpClient implements HttpClientInterface {
 
                 HttpClient.SetHeadersFromString(response.headers, xhr.getAllResponseHeaders());
                 break;
+
+            // case ReadyState.Done:
         }
     }
 
@@ -288,59 +353,6 @@ export default class HttpClient implements HttpClientInterface {
 
     private onProgress(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
         // console.log('progress', event, event.constructor.name);
-    }
-
-    private onLoad(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
-        const successful = this.isSuccessStatus(response.status);
-        response.endTime = Date.now();
-        response.request = request;
-
-        let tryAndReturn = request.responseType;
-        if (undefined === tryAndReturn) {
-            // Attempt to guess content responseType by content type.
-            const ct = response.headers.contentType;
-            if (/json/.test(ct)) {
-                tryAndReturn = ResponseType.Json;
-            } else if (/(ht|x)ml/.test(ct)) {
-                tryAndReturn = ResponseType.Document;
-            }
-        }
-
-        switch (tryAndReturn) {
-            case ResponseType.Json:
-                try {
-                    response.content = xhr.response;
-                    response.responseType = ResponseType.Json;
-                } catch (error) {
-                    error = new HttpClientError(`Error consuming json request; ${error.message}.`, error);
-                    response.content = xhr.response;
-                    throw error;
-                }
-                break;
-
-            case ResponseType.Document:
-                response.content = xhr.responseXML;
-                response.responseType = ResponseType.Document;
-                break;
-
-            default:
-                response.content = xhr.response;
-                response.responseType = request.responseType;
-        }
-
-        if (!successful) {
-            const instance = undefined !== StatusToError[response.status]
-                ? StatusToError[response.status]
-                : HttpError;
-
-            const error = new instance(`Server returned ${response.status} ${response.statusText}.`);
-            error.response = response;
-            error.request = request;
-
-            return error;
-        }
-
-        return response;
     }
 
     private isSuccessStatus(status: number): boolean {

@@ -7,13 +7,13 @@ export default class Response implements ResponseInterface {
     status: number;
     statusText: string;
     responseType?: ResponseType;
-    content: string | object | Array<any>;
+    data: any;
+    successful: boolean;
     aborted: boolean;
     timeout: boolean;
     error: boolean;
     endTime: number;
     private _headers;
-    constructor();
     headers: Headers;
     readonly duration: number;
 }
