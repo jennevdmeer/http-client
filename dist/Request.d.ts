@@ -20,7 +20,9 @@ export default class Request implements RequestInterface {
     retries: number;
     private _headers;
     constructor(method: string, url: string, options?: RequestOptionsInterface);
-    headers: Headers;
-    method: string;
+    set headers(headers: Headers);
+    get headers(): Headers;
+    set method(method: string);
+    get method(): string;
     abort(): void;
 }

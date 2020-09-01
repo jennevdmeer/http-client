@@ -8,8 +8,19 @@
   "name": "impulze-http-client",
   "main": "dist/Index.js",
   "types": "dist/Index.d.ts",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "scripts": {
-    "prepare": "tsc"
+    "build": "npm run build:types && npm run build:js",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:js": "babel src --out-dir dist --extensions \".js,.ts,.tsx\"",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.11.5",
+    "@babel/core": "^7.11.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-typescript": "^7.10.4",
+    "typescript": "^4.0.2"
   }
 }

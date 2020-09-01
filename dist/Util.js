@@ -1,7 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const toString = Object.prototype.toString;
-// export function isArray(val) {
+import "core-js/modules/es.object.to-string";
+import "core-js/modules/es.regexp.to-string";
+var toString = Object.prototype.toString; // export function isArray(val) {
 //     return toString.call(val) === '[object Array]';
 // }
 //
@@ -28,11 +27,10 @@ const toString = Object.prototype.toString;
 //
 //     return result;
 // }
-function isFormData(val) {
-    return typeof FormData !== 'undefined' && val instanceof FormData;
-}
-exports.isFormData = isFormData;
-//
+
+export function isFormData(val) {
+  return typeof FormData !== 'undefined' && val instanceof FormData;
+} //
 // export function isString(val) {
 //     return typeof val === 'string';
 // }
@@ -57,15 +55,13 @@ exports.isFormData = isFormData;
 // export function isDate(val) {
 //     return toString.call(val) === '[object Date]';
 // }
-function isFile(val) {
-    return toString.call(val) === '[object File]';
+
+export function isFile(val) {
+  return toString.call(val) === '[object File]';
 }
-exports.isFile = isFile;
-function isBlob(val) {
-    return toString.call(val) === '[object Blob]';
-}
-exports.isBlob = isBlob;
-// export function isFunction(val) {
+export function isBlob(val) {
+  return toString.call(val) === '[object Blob]';
+} // export function isFunction(val) {
 //     return toString.call(val) === '[object Function]';
 // }
 //
@@ -76,4 +72,3 @@ exports.isBlob = isBlob;
 // export function isURLSearchParams(val) {
 //     return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
 // }
-//# sourceMappingURL=Util.js.map

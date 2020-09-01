@@ -14,6 +14,7 @@ export default class Response implements ResponseInterface {
     error: boolean;
     endTime: number;
     private _headers;
-    headers: Headers;
-    readonly duration: number;
+    set headers(headers: Headers);
+    get headers(): Headers;
+    get duration(): number;
 }
