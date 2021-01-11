@@ -14,6 +14,9 @@ export default class HttpClient implements HttpClientInterface {
     constructor(options?: RequestOptionsInterface);
     get(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
     post(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
+    put(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
+    patch(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
+    delete(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
     request(method: string, url: string, options?: RequestOptionsInterface): Promise<ResponseInterface>;
     retry(request: RequestInterface): Promise<ResponseInterface>;
     private execute;

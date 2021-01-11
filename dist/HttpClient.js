@@ -162,6 +162,21 @@ var HttpClient = /*#__PURE__*/function () {
       return this.request('post', url, options);
     }
   }, {
+    key: "put",
+    value: function put(url, options) {
+      return this.request('put', url, options);
+    }
+  }, {
+    key: "patch",
+    value: function patch(url, options) {
+      return this.request('patch', url, options);
+    }
+  }, {
+    key: "delete",
+    value: function _delete(url, options) {
+      return this.request('delete', url, options);
+    }
+  }, {
     key: "request",
     value: function request(method, url, options) {
       var _this = this;

@@ -101,6 +101,18 @@ export default class HttpClient implements HttpClientInterface {
         return this.request('post', url, options);
     }
 
+    put(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface> {
+        return this.request('put', url, options);
+    }
+
+    patch(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface> {
+        return this.request('patch', url, options);
+    }
+
+    delete(url: string, options?: RequestOptionsInterface): Promise<ResponseInterface> {
+        return this.request('delete', url, options);
+    }
+
     request(method: string, url: string, options?: RequestOptionsInterface): Promise<ResponseInterface> {
         const request: RequestInterface = new Request(
             method,
