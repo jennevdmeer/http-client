@@ -9,13 +9,13 @@ export default interface RequestOptionsInterface {
         [key: string]: string;
     };
     baseUrl?: string;
-    query: object;
+    query?: object;
     data?: string | object;
     json?: any;
-    headers: Headers;
-    timeout: number;
-    responseType: ResponseType;
-    withCredentials: boolean;
+    headers?: Headers;
+    timeout?: number;
+    responseType?: ResponseType;
+    withCredentials?: boolean;
     isSuccessStatus?: (status: number) => boolean;
     retry?: (attempts: number, error: HttpClientError) => number | undefined;
 }

@@ -1,5 +1,6 @@
 import ResponseType from './ResponseType';
 import Headers from './Headers';
+
 import { HttpClientError } from './Errors';
 
 export default interface RequestOptionsInterface {
@@ -9,14 +10,14 @@ export default interface RequestOptionsInterface {
     auth?: string | { [key: string]: string },
     baseUrl?: string,
 
-    query: object,
+    query?: object,
     data?: string | object,
     json?: any,
-    headers: Headers,
+    headers?: Headers,
 
-    timeout: number, // timeout in ms
-    responseType: ResponseType, // response should be parsed as; text, json or arrayBuffer.
-    withCredentials: boolean,
+    timeout?: number, // timeout in ms
+    responseType?: ResponseType, // response should be parsed as; text, json or arrayBuffer.
+    withCredentials?: boolean,
 
     isSuccessStatus?: (status: number) => boolean;
 
