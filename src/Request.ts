@@ -13,7 +13,7 @@ export default class Request implements RequestInterface {
     auth: string | { [key: string]: string };
     baseUrl: string;
     query: object;
-    data: string | object;
+    body: string | object;
     json: string | object;
     responseType: ResponseType = ResponseType.Undefined;
     timeout: number;
@@ -30,7 +30,6 @@ export default class Request implements RequestInterface {
 
         Object.assign(this, options);
     }
-
 
     set headers(headers: Headers) {
         HttpClient.SetHeaders(this._headers, headers);

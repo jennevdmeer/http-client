@@ -197,7 +197,7 @@ export default class HttpClient implements HttpClientInterface {
                 request.headers.contentType = 'application/json';
             }
         } else {
-            content = request.body;
+            content = request.data;
 
             if (isFormData(content) || ((isBlob(content) || isFile(content)) && request.responseType)) {
                 request.responseType = ResponseType.Undefined;

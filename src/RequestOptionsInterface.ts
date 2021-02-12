@@ -11,7 +11,7 @@ export default interface RequestOptionsInterface {
     baseUrl?: string,
 
     query?: object,
-    data?: string | object,
+    body?: string | object,
     json?: any,
     headers?: Headers,
 
