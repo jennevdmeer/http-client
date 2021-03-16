@@ -9,7 +9,15 @@ import Headers from './Headers';
 import ReadyState from './ReadyState';
 import ResponseType from './ResponseType';
 
-import { HttpClientError, HttpError, NetworkError, RequestAborted, RequestTimeout, StatusToError } from './Errors';
+import {
+    HttpClientError,
+    HttpError,
+    NetworkError,
+    RequestAborted,
+    RequestTimeout,
+    StatusToError
+} from './Errors';
+
 import { isBlob, isFile, isFormData } from './Util';
 
 export default class HttpClient implements HttpClientInterface {
@@ -76,7 +84,7 @@ export default class HttpClient implements HttpClientInterface {
             const entries = (new URLSearchParams(url.substr(existing))).entries();
 
             for (let entry of entries) {
-                const [key, value] = entry;
+                const [ key, value ] = entry;
                 query[key] = value;
             }
 
@@ -215,7 +223,7 @@ export default class HttpClient implements HttpClientInterface {
         }
 
         let authValue;
-        if (typeof(auth) === 'string') {
+        if (typeof (auth) === 'string') {
             authValue = auth;
         } else if (auth.type && auth.credentials) {
             authValue = auth.type + ' ' + auth.credentials;
@@ -251,7 +259,9 @@ export default class HttpClient implements HttpClientInterface {
     }
 
     private buildUrl(request: RequestInterface): string {
-        let url = (request.baseUrl ? request.baseUrl : '') + request.url;
+        // test for protocol "https://" or starting with "/".
+        const absolute = /^([a-z]+:\/)?\//i.test(request.url);
+        let url = (request.baseUrl && !absolute ? request.baseUrl : '') + request.url;
 
         if (request.query) {
             url = HttpClient.BuildQuery(url, request.query);
@@ -297,7 +307,7 @@ export default class HttpClient implements HttpClientInterface {
 
         let error;
         if (ReadyState.Done === xhr.readyState && !xhr.status) {
-            const messages = ['Network error, possible network problems?'];
+            const messages = [ 'Network error, possible network problems?' ];
             if (/^[a-z]+:\/\//.test(request.url) && request.url.indexOf(location.origin) < 0) {
                 messages.push('Requested url seems different, are the proper CORS headers set up on the remote server?');
                 if (xhr.withCredentials) {

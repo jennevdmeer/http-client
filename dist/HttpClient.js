@@ -276,7 +276,7 @@ var HttpClient = /*#__PURE__*/function () {
           request.headers.contentType = 'application/json';
         }
       } else {
-        content = request.body;
+        content = request.data;
 
         if (isFormData(content) || (isBlob(content) || isFile(content)) && request.responseType) {
           request.responseType = ResponseType.Undefined;
@@ -331,7 +331,9 @@ var HttpClient = /*#__PURE__*/function () {
   }, {
     key: "buildUrl",
     value: function buildUrl(request) {
-      var url = (request.baseUrl ? request.baseUrl : '') + request.url;
+      // test for protocol "https://" or starting with "/".
+      var absolute = /^([a-z]+:\/)?\//i.test(request.url);
+      var url = (request.baseUrl && !absolute ? request.baseUrl : '') + request.url;
 
       if (request.query) {
         url = HttpClient.BuildQuery(url, request.query);

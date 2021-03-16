@@ -11,7 +11,7 @@ export default class Request implements RequestInterface {
     };
     baseUrl: string;
     query: object;
-    data: string | object;
+    body: string | object;
     json: string | object;
     responseType: ResponseType;
     timeout: number;

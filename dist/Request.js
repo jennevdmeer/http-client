@@ -29,7 +29,7 @@ var Request = /*#__PURE__*/function () {
 
     _defineProperty(this, "query", void 0);
 
-    _defineProperty(this, "data", void 0);
+    _defineProperty(this, "body", void 0);
 
     _defineProperty(this, "json", void 0);
 
