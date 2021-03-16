@@ -259,8 +259,8 @@ export default class HttpClient implements HttpClientInterface {
     }
 
     private buildUrl(request: RequestInterface): string {
-        // test for protocol "https://" or starting with "/".
-        const absolute = /^([a-z]+:\/)?\//i.test(request.url);
+        // absolute url testing by protocol eg "https://".
+        const absolute = /^[a-z]+:\/\//i.test(request.url);
         let url = (request.baseUrl && !absolute ? request.baseUrl : '') + request.url;
 
         if (request.query) {

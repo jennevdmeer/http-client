@@ -331,8 +331,8 @@ var HttpClient = /*#__PURE__*/function () {
   }, {
     key: "buildUrl",
     value: function buildUrl(request) {
-      // test for protocol "https://" or starting with "/".
-      var absolute = /^([a-z]+:\/)?\//i.test(request.url);
+      // absolute url testing by protocol eg "https://".
+      var absolute = /^[a-z]+:\/\//i.test(request.url);
       var url = (request.baseUrl && !absolute ? request.baseUrl : '') + request.url;
 
       if (request.query) {
