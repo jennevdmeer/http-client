@@ -18,6 +18,7 @@ export default interface RequestOptionsInterface {
     timeout?: number, // timeout in ms
     responseType?: ResponseType, // response should be parsed as; text, json or arrayBuffer.
     withCredentials?: boolean,
+    async?: boolean,
 
     isSuccessStatus?: (status: number) => boolean;
 

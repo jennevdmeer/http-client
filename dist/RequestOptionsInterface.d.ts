@@ -16,6 +16,7 @@ export default interface RequestOptionsInterface {
     timeout?: number;
     responseType?: ResponseType;
     withCredentials?: boolean;
+    async?: boolean;
     isSuccessStatus?: (status: number) => boolean;
     retry?: (attempts: number, error: HttpClientError) => number | undefined;
 }

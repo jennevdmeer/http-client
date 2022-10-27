@@ -18,6 +18,7 @@ export default class Request implements RequestInterface {
     responseType: ResponseType = ResponseType.Undefined;
     timeout: number;
     withCredentials: boolean = false;
+    async: boolean = true;
     startTime: number;
     retries: number = 0;
 
@@ -55,4 +56,3 @@ export default class Request implements RequestInterface {
         this.request.abort();
     }
 }
-

@@ -225,7 +225,7 @@ var HttpClient = /*#__PURE__*/function () {
       var response = new Response();
       return new Promise(function (resolve, reject) {
         var xhr = request.request = new XMLHttpRequest();
-        xhr.open(request.method.toUpperCase(), _this2.buildUrl(request), true);
+        xhr.open(request.method.toUpperCase(), _this2.buildUrl(request), request.async);
         xhr.withCredentials = request.withCredentials;
         xhr.timeout = request.timeout;
         xhr.responseType = request.responseType;

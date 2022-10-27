@@ -165,7 +165,7 @@ export default class HttpClient implements HttpClientInterface {
 
         return new Promise((resolve, reject) => {
             let xhr = request.request = new XMLHttpRequest();
-            xhr.open(request.method.toUpperCase(), this.buildUrl(request), true);
+            xhr.open(request.method.toUpperCase(), this.buildUrl(request), request.async);
 
             xhr.withCredentials = request.withCredentials;
             xhr.timeout = request.timeout;

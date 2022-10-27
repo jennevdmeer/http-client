@@ -39,6 +39,8 @@ var Request = /*#__PURE__*/function () {
 
     _defineProperty(this, "withCredentials", false);
 
+    _defineProperty(this, "async", true);
+
     _defineProperty(this, "startTime", void 0);
 
     _defineProperty(this, "retries", 0);

@@ -16,6 +16,7 @@ export default class Request implements RequestInterface {
     responseType: ResponseType;
     timeout: number;
     withCredentials: boolean;
+    async: boolean;
     startTime: number;
     retries: number;
     private _headers;
