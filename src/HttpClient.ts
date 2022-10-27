@@ -189,9 +189,9 @@ export default class HttpClient implements HttpClientInterface {
 
             xhr.onreadystatechange = event => this.onReadyStateChange(xhr, event, request, response);
 
-            // xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
-            // xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
-            // xhr.onprogress = event => this.onProgress(xhr, event, request, response);
+            xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
+            xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
+            xhr.onprogress = event => this.onProgress(xhr, event, request, response);
 
             xhr.send(content);
         });
@@ -270,7 +270,7 @@ export default class HttpClient implements HttpClientInterface {
         return url;
     }
 
-    private onLoad(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
+    private onLoad(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
         response.endTime = Date.now();
         response.request = request;
 
@@ -286,6 +286,10 @@ export default class HttpClient implements HttpClientInterface {
         }
 
         if (this.isSuccessStatus(response.status)) {
+            if (typeof(this.options.onLoad) === 'function') {
+                this.options.onLoad.call(this, event, request, response, xhr);
+            }
+
             return response;
         }
 
@@ -297,10 +301,18 @@ export default class HttpClient implements HttpClientInterface {
         error.response = response;
         error.request = request;
 
+        if (typeof(this.options.onLoadError) === 'function') {
+            this.options.onLoad.call(this, event, error, xhr);
+        }
+
         return error;
     }
 
-    private onError(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
+    private onError(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+        if (typeof(this.options.onError) === 'function') {
+            this.options.onError.call(this, event, request, response, xhr);
+        }
+
         response.request = request;
         response.endTime = Date.now();
         response.error = true;
@@ -323,10 +335,14 @@ export default class HttpClient implements HttpClientInterface {
         error.request = request;
         error.response = response;
 
+        if (typeof(this.options.onError) === 'function') {
+            this.options.onError.call(this, event, error, xhr);
+        }
+
         return error;
     }
 
-    private onTimeout(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
+    private onTimeout(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
         response.request = request;
         response.endTime = Date.now();
         response.timeout = true;
@@ -337,10 +353,14 @@ export default class HttpClient implements HttpClientInterface {
         error.request = request;
         error.response = response;
 
+        if (typeof(this.options.onTimeout) === 'function') {
+            this.options.onTimeout.call(this, event, error, xhr);
+        }
+
         return error;
     }
 
-    private onAbort(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
+    private onAbort(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
         response.request = request;
         response.endTime = Date.now();
         response.aborted = true;
@@ -348,6 +368,10 @@ export default class HttpClient implements HttpClientInterface {
         const error = new RequestAborted(`Request to ${request.url} has been aborted.`);
         error.request = request;
         error.response = response;
+
+        if (typeof(this.options.onAbort) === 'function') {
+            this.options.onAbort.call(this, event, error, xhr);
+        }
 
         return error;
     }
@@ -363,18 +387,28 @@ export default class HttpClient implements HttpClientInterface {
 
             // case ReadyState.Done:
         }
+
+        if (typeof(this.options.onReadyStateChange) === 'function') {
+            this.options.onReadyStateChange.call(this, event, request, response, xhr);
+        }
     }
 
-    private onLoadStart(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
-        // console.log('loadend', event, event.constructor.name);
+    private onLoadStart(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+        if (typeof(this.options.onLoadStart) === 'function') {
+            this.options.onLoadStart.call(this, event, request, response, xhr);
+        }
     }
 
-    private onLoadEnd(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
-        // console.log('loadend', event, event.constructor.name);
+    private onLoadEnd(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+        if (typeof(this.options.onLoadEnd) === 'function') {
+            this.options.onLoadEnd.call(this, event, request, response, xhr);
+        }
     }
 
-    private onProgress(xhr: XMLHttpRequest, event: Event, request: RequestInterface, response: ResponseInterface) {
-        // console.log('progress', event, event.constructor.name);
+    private onProgress(xhr: XMLHttpRequest, event: ProgressEvent, request: RequestInterface, response: ResponseInterface) {
+        if (typeof(this.options.onProgress) === 'function') {
+            this.options.onProgress.call(this, event, request, response, xhr);
+        }
     }
 
     private isSuccessStatus(status: number): boolean {
