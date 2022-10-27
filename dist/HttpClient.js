@@ -285,7 +285,7 @@ var HttpClient = /*#__PURE__*/function () {
           request.headers.contentType = 'application/json';
         }
       } else {
-        content = request.data;
+        content = request.body;
 
         if (isFormData(content) || (isBlob(content) || isFile(content)) && request.responseType) {
           request.responseType = ResponseType.Undefined;
