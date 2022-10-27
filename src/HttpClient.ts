@@ -168,7 +168,10 @@ export default class HttpClient implements HttpClientInterface {
             xhr.open(request.method.toUpperCase(), this.buildUrl(request), request.async);
 
             xhr.withCredentials = request.withCredentials;
-            xhr.timeout = request.timeout;
+            if (!request.async) {
+                xhr.timeout = request.timeout;
+            }
+
             xhr.responseType = request.responseType;
 
             const content = this.prepareRequestContent(request);

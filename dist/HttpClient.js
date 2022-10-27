@@ -227,7 +227,11 @@ var HttpClient = /*#__PURE__*/function () {
         var xhr = request.request = new XMLHttpRequest();
         xhr.open(request.method.toUpperCase(), _this2.buildUrl(request), request.async);
         xhr.withCredentials = request.withCredentials;
-        xhr.timeout = request.timeout;
+
+        if (!request.async) {
+          xhr.timeout = request.timeout;
+        }
+
         xhr.responseType = request.responseType;
 
         var content = _this2.prepareRequestContent(request);
