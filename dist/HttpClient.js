@@ -256,10 +256,19 @@ var HttpClient = /*#__PURE__*/function () {
 
         xhr.onreadystatechange = function (event) {
           return _this2.onReadyStateChange(xhr, event, request, response);
-        }; // xhr.onloadstart = event => this.onLoadStart(xhr, event, request, response);
-        // xhr.onloadend = event => this.onLoadEnd(xhr, event, request, response);
-        // xhr.onprogress = event => this.onProgress(xhr, event, request, response);
+        };
 
+        xhr.onloadstart = function (event) {
+          return _this2.onLoadStart(xhr, event, request, response);
+        };
+
+        xhr.onloadend = function (event) {
+          return _this2.onLoadEnd(xhr, event, request, response);
+        };
+
+        xhr.onprogress = function (event) {
+          return _this2.onProgress(xhr, event, request, response);
+        };
 
         xhr.send(content);
       });
@@ -355,6 +364,10 @@ var HttpClient = /*#__PURE__*/function () {
       }
 
       if (this.isSuccessStatus(response.status)) {
+        if (typeof this.options.onLoad === 'function') {
+          this.options.onLoad.call(this, event, request, response, xhr);
+        }
+
         return response;
       }
 
@@ -362,11 +375,20 @@ var HttpClient = /*#__PURE__*/function () {
       var error = new instance("Server returned ".concat(response.status, " ").concat(response.statusText, "."));
       error.response = response;
       error.request = request;
+
+      if (typeof this.options.onLoadError === 'function') {
+        this.options.onLoad.call(this, event, error, xhr);
+      }
+
       return error;
     }
   }, {
     key: "onError",
     value: function onError(xhr, event, request, response) {
+      if (typeof this.options.onError === 'function') {
+        this.options.onError.call(this, event, request, response, xhr);
+      }
+
       response.request = request;
       response.endTime = Date.now();
       response.error = true;
@@ -390,6 +412,11 @@ var HttpClient = /*#__PURE__*/function () {
 
       error.request = request;
       error.response = response;
+
+      if (typeof this.options.onError === 'function') {
+        this.options.onError.call(this, event, error, xhr);
+      }
+
       return error;
     }
   }, {
@@ -403,6 +430,11 @@ var HttpClient = /*#__PURE__*/function () {
       var error = new RequestTimeout("Request".concat(prefix, " to ").concat(request.url, " has timed out (").concat(response.duration, "ms)."));
       error.request = request;
       error.response = response;
+
+      if (typeof this.options.onTimeout === 'function') {
+        this.options.onTimeout.call(this, event, error, xhr);
+      }
+
       return error;
     }
   }, {
@@ -414,6 +446,11 @@ var HttpClient = /*#__PURE__*/function () {
       var error = new RequestAborted("Request to ".concat(request.url, " has been aborted."));
       error.request = request;
       error.response = response;
+
+      if (typeof this.options.onAbort === 'function') {
+        this.options.onAbort.call(this, event, error, xhr);
+      }
+
       return error;
     }
   }, {
@@ -427,18 +464,31 @@ var HttpClient = /*#__PURE__*/function () {
           break;
         // case ReadyState.Done:
       }
+
+      if (typeof this.options.onReadyStateChange === 'function') {
+        this.options.onReadyStateChange.call(this, event, request, response, xhr);
+      }
     }
   }, {
     key: "onLoadStart",
-    value: function onLoadStart(xhr, event, request, response) {// console.log('loadend', event, event.constructor.name);
+    value: function onLoadStart(xhr, event, request, response) {
+      if (typeof this.options.onLoadStart === 'function') {
+        this.options.onLoadStart.call(this, event, request, response, xhr);
+      }
     }
   }, {
     key: "onLoadEnd",
-    value: function onLoadEnd(xhr, event, request, response) {// console.log('loadend', event, event.constructor.name);
+    value: function onLoadEnd(xhr, event, request, response) {
+      if (typeof this.options.onLoadEnd === 'function') {
+        this.options.onLoadEnd.call(this, event, request, response, xhr);
+      }
     }
   }, {
     key: "onProgress",
-    value: function onProgress(xhr, event, request, response) {// console.log('progress', event, event.constructor.name);
+    value: function onProgress(xhr, event, request, response) {
+      if (typeof this.options.onProgress === 'function') {
+        this.options.onProgress.call(this, event, request, response, xhr);
+      }
     }
   }, {
     key: "isSuccessStatus",
